@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>World Location AI</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Tahoma,Arial,sans-serif;
+}
+
+body{
+    background:#0b1020;
+    color:white;
+    min-height:100vh;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:30px 15px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+    font-size:30px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#aeb7d0;
+    margin-bottom:30px;
+}
+
+.card{
+    background:#151c31;
+    border:1px solid #293451;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 15px 50px rgba(0,0,0,.3);
+}
+
+.upload{
+    border:2px dashed #52658f;
+    border-radius:16px;
+    padding:40px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.upload:hover{
+    border-color:#7e9cff;
+    background:#1b2440;
+}
+
+.upload input{
+    display:none;
+}
+
+.upload-icon{
+    font-size:50px;
+    margin-bottom:15px;
+}
+
+.preview{
+    width:100%;
+    max-height:450px;
+    object-fit:contain;
+    margin-top:20px;
+    border-radius:15px;
+    display:none;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    margin-top:20px;
+    background:#536dfe;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#4056d8;
+}
+
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.loading{
+    display:none;
+    text-align:center;
+    margin-top:20px;
+    color:#b9c5ff;
+}
+
+.result{
+    display:none;
+    margin-top:25px;
+    background:#10172a;
+    border-radius:16px;
+    padding:20px;
+}
+
+.result h2{
+    margin-bottom:15px;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid #293451;
+}
+
+.label{
+    color:#9ca9c7;
+}
+
+.value{
+    text-align:left;
+    font-weight:bold;
+}
+
+.confidence{
+    margin-top:20px;
+}
+
+.bar{
+    height:12px;
+    background:#293451;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.bar-fill{
+    height:100%;
+    width:0%;
+    background:#5cdb95;
+    transition:1s;
+}
+
+.error{
+    display:none;
+    background:#4b2025;
+    color:#ffb5b5;
+    padding:15px;
+    border-radius:12px;
+    margin-top:20px;
+}
+
+.features{
+    margin-top:20px;
+    line-height:2;
+    color:#d6dcf0;
+}
+
+.footer{
+    text-align:center;
+    color:#737e9c;
+    margin-top:25px;
+    font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🌍 World Location AI</h1>
+
+<p class="subtitle">
+عکس یک مکان را وارد کنید تا هوش مصنوعی آن را بررسی کند
+</p>
+
+<div class="card">
+
+<label class="upload">
+
+<input
+type="file"
+id="imageInput"
+accept="image/*"
+>
+
+<div class="upload-icon">📷</div>
+
+<h3>انتخاب عکس</h3>
+
+<p style="margin-top:10px;color:#8995b4">
+عکس یک ساختمان، خیابان، منظره یا مکان معروف را وارد کنید
+</p>
+
+</label>
+
+<img
+id="preview"
+class="preview"
+>
+
+<button
+id="analyzeButton"
+disabled
+>
+🔎 تشخیص مکان
+</button>
+
+<div
+id="loading"
+class="loading"
+>
+⏳ در حال بررسی تصویر و جستجوی نشانه‌های مکانی...
+</div>
+
+<div
+id="error"
+class="error"
+></div>
+
+<div
+id="result"
+class="result"
+>
+
+<h2>📍 نتیجه تشخیص</h2>
+
+<div class="row">
+<span class="label">مکان</span>
+<span class="value" id="place">-</span>
+</div>
+
+<div class="row">
+<span class="label">شهر</span>
+<span class="value" id="city">-</span>
+</div>
+
+<div class="row">
+<span class="label">کشور</span>
+<span class="value" id="country">-</span>
+</div>
+
+<div class="row">
+<span class="label">قاره</span>
+<span class="value" id="continent">-</span>
+</div>
+
+<div class="confidence">
+
+<span class="label">
+درصد اطمینان
+</span>
+
+<div class="bar">
+<div
+id="barFill"
+class="bar-fill"
+></div>
+</div>
+
+<p
+id="confidenceText"
+style="margin-top:8px"
+>
+0%
+</p>
+
+</div>
+
+<div class="features">
+
+<h3>🔍 نشانه‌های تشخیص</h3>
+
+<p id="features">
+-
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="footer">
+AI Location Recognition
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   API KEY
+========================================= */
+
+/*
+   کلید Gemini خودت را اینجا قرار بده.
+
+   مثال:
+
+   const API_KEY = "AIzaSy........";
+*/
+
+const API_KEY = "YOUR_GEMINI_API_KEY";
+
+
+/* =========================================
+   DATABASE
+   حدود 1000 مکان را می‌توان در همین ساختار
+   قرار داد.
+========================================= */
+
+const famousPlaces = [
+
+/* فرانسه */
+
+{
+name:"برج ایفل",
+city:"پاریس",
+country:"فرانسه",
+continent:"اروپا",
+keywords:[
+"برج ایفل",
+"Eiffel Tower",
+"Paris",
+"France"
+]
+},
+
+{
+name:"موزه لوور",
+city:"پاریس",
+country:"فرانسه",
+continent:"اروپا",
+keywords:[
+"Louvre",
+"موزه لوور",
+"Paris"
+]
+},
+
+{
+name:"طاق پیروزی",
+city:"پاریس",
+country:"فرانسه",
+continent:"اروپا",
+keywords:[
+"Arc de Triomphe",
+"Paris"
+]
+},
+
+/* ایتالیا */
+
+{
+name:"کولوسئوم",
+city:"رم",
+country:"ایتالیا",
+continent:"اروپا",
+keywords:[
+"Colosseum",
+"کولوسئوم",
+"Rome"
+]
+},
+
+{
+name:"برج پیزا",
+city:"پیزا",
+country:"ایتالیا",
+continent:"اروپا",
+keywords:[
+"Leaning Tower of Pisa",
+"برج پیزا",
+"Pisa"
+]
+},
+
+{
+name:"کانال بزرگ ونیز",
+city:"ونیز",
+country:"ایتالیا",
+continent:"اروپا",
+keywords:[
+"Grand Canal",
+"Venice"
+]
+},
+
+/* انگلستان */
+
+{
+name:"برج بیگ بن",
+city:"لندن",
+country:"بریتانیا",
+continent:"اروپا",
+keywords:[
+"Big Ben",
+"London"
+]
+},
+
+{
+name:"پل تاور بریج",
+city:"لندن",
+country:"بریتانیا",
+continent:"اروپا",
+keywords:[
+"Tower Bridge",
+"London"
+]
+},
+
+{
+name:"چشم لندن",
+city:"لندن",
+country:"بریتانیا",
+continent:"اروپا",
+keywords:[
+"London Eye",
+"London"
+]
+},
+
+/* آمریکا */
+
+{
+name:"مجسمه آزادی",
+city:"نیویورک",
+country:"آمریکا",
+continent:"آمریکای شمالی",
+keywords:[
+"Statue of Liberty",
+"New York"
+]
+},
+
+{
+name:"پل گلدن گیت",
+city:"سان‌فرانسیسکو",
+country:"آمریکا",
+continent:"آمریکای شمالی",
+keywords:[
+"Golden Gate Bridge",
+"San Francisco"
+]
+},
+
+{
+name:"هالیوود ساین",
+city:"لس‌آنجلس",
+country:"آمریکا",
+continent:"آمریکای شمالی",
+keywords:[
+"Hollywood Sign",
+"Los Angeles"
+]
+},
+
+/* امارات */
+
+{
+name:"برج خلیفه",
+city:"دبی",
+country:"امارات متحده عربی",
+continent:"آسیا",
+keywords:[
+"Burj Khalifa",
+"Dubai"
+]
+},
+
+{
+name:"برج العرب",
+city:"دبی",
+country:"امارات متحده عربی",
+continent:"آسیا",
+keywords:[
+"Burj Al Arab",
+"Dubai"
+]
+},
+
+/* ترکیه */
+
+{
+name:"ایاصوفیه",
+city:"استانبول",
+country:"ترکیه",
+continent:"آسیا",
+keywords:[
+"Hagia Sophia",
+"Istanbul"
+]
+},
+
+{
+name:"مسجد آبی",
+city:"استانبول",
+country:"ترکیه",
+continent:"آسیا",
+keywords:[
+"Blue Mosque",
+"Istanbul"
+]
+},
+
+/* هند */
+
+{
+name:"تاج محل",
+city:"آگرا",
+country:"هند",
+continent:"آسیا",
+keywords:[
+"Taj Mahal",
+"Agra"
+]
+},
+
+/* چین */
+
+{
+name:"دیوار بزرگ چین",
+city:"پکن",
+country:"چین",
+continent:"آسیا",
+keywords:[
+"Great Wall of China",
+"China"
+]
+},
+
+/* ژاپن */
+
+{
+name:"برج توکیو",
+city:"توکیو",
+country:"ژاپن",
+continent:"آسیا",
+keywords:[
+"Tokyo Tower",
+"Tokyo"
+]
+},
+
+/* استرالیا */
+
+{
+name:"خانه اپرای سیدنی",
+city:"سیدنی",
+country:"استرالیا",
+continent:"اقیانوسیه",
+keywords:[
+"Sydney Opera House",
+"Sydney"
+]
+},
+
+/* مصر */
+
+{
+name:"اهرام جیزه",
+city:"قاهره",
+country:"مصر",
+continent:"آفریقا",
+keywords:[
+"Giza Pyramids",
+"Pyramids",
+"Egypt"
+]
+},
+
+/* برزیل */
+
+{
+name:"مجسمه مسیح نجات‌دهنده",
+city:"ریودوژانیرو",
+country:"برزیل",
+continent:"آمریکای جنوبی",
+keywords:[
+"Christ the Redeemer",
+"Rio de Janeiro"
+]
+},
+
+/* ایران */
+
+{
+name:"برج میلاد",
+city:"تهران",
+country:"ایران",
+continent:"آسیا",
+keywords:[
+"Milad Tower",
+"Tehran",
+"Iran"
+]
+},
+
+{
+name:"برج آزادی",
+city:"تهران",
+country:"ایران",
+continent:"آسیا",
+keywords:[
+"Azadi Tower",
+"Tehran",
+"Iran"
+]
+},
+
+{
+name:"سی و سه پل",
+city:"اصفهان",
+country:"ایران",
+continent:"آسیا",
+keywords:[
+"Si-o-se-pol",
+"Isfahan"
+]
+},
+
+{
+name:"تخت جمشید",
+city:"شیراز",
+country:"ایران",
+continent:"آسیا",
+keywords:[
+"Persepolis",
+"Shiraz"
+]
+}
+
+];
+
+
+/* =========================================
+   IMAGE INPUT
+========================================= */
+
+const imageInput =
+document.getElementById("imageInput");
+
+const preview =
+document.getElementById("preview");
+
+const analyzeButton =
+document.getElementById("analyzeButton");
+
+let selectedImage = null;
+
+
+imageInput.addEventListener(
+"change",
+function(){
+
+const file = this.files[0];
+
+if(!file) return;
+
+selectedImage = file;
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+preview.src = e.target.result;
+
+preview.style.display = "block";
+
+analyzeButton.disabled = false;
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+
+/* =========================================
+   ANALYZE IMAGE
+========================================= */
+
+analyzeButton.addEventListener(
+"click",
+async function(){
+
+if(!selectedImage) return;
+
+if(
+API_KEY === "YOUR_GEMINI_API_KEY"
+){
+
+showError(
+"ابتدا API Key خودت را داخل کد وارد کن."
+);
+
+return;
+
+}
+
+
+hideError();
+
+document.getElementById(
+"loading"
+).style.display = "block";
+
+document.getElementById(
+"result"
+).style.display = "none";
+
+analyzeButton.disabled = true;
+
+
+try{
+
+const base64 =
+await fileToBase64(selectedImage);
+
+
+const prompt = `
+
+تو یک سیستم حرفه‌ای تشخیص موقعیت جغرافیایی
+از روی تصویر هستی.
+
+این عکس را با دقت بسیار زیاد بررسی کن.
+
+تمام موارد زیر را بررسی کن:
+
+1. ساختمان‌ها
+2. بناهای تاریخی
+3. تابلوها
+4. نوشته‌ها
+5. زبان
+6. شماره پلاک‌ها
+7. علائم خیابانی
+8. معماری
+9. جاده
+10. کوه‌ها
+11. درختان و پوشش گیاهی
+12. آب‌وهوا
+13. خودروها
+14. پرچم‌ها
+15. مجسمه‌ها
+16. شکل ساختمان‌ها
+17. سبک شهری
+18. موقعیت خورشید
+19. ویژگی‌های جغرافیایی
+20. مکان‌های معروف
+
+همچنین نتیجه را با فهرست مکان‌های معروف زیر مقایسه کن:
+
+${JSON.stringify(famousPlaces)}
+
+اگر مکان مشخصی در تصویر وجود دارد،
+آن را شناسایی کن.
+
+اگر مکان معروف نیست،
+از روی نشانه‌های جغرافیایی بهترین موقعیت احتمالی
+را تخمین بزن.
+
+پاسخ فقط JSON باشد:
+
+{
+ "place": "نام مکان",
+ "city": "شهر",
+ "country": "کشور",
+ "continent": "قاره",
+ "confidence": 0,
+ "features": [
+   "نشانه اول",
+   "نشانه دوم",
+   "نشانه سوم"
+ ]
+}
+
+confidence باید عددی بین 0 تا 100 باشد.
+
+`;
+
+
+const response =
+await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
++ API_KEY,
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:JSON.stringify({
+
+contents:[
+
+{
+
+parts:[
+
+{
+text:prompt
+},
+
+{
+inline_data:{
+mime_type:selectedImage.type,
+data:base64
+}
+}
+
+]
+
+}
+
+]
+
+})
+
+});
+
+
+if(!response.ok){
+
+throw new Error(
+"خطا در اتصال به سرویس هوش مصنوعی"
+);
+
+}
+
+
+const data =
+await response.json();
+
+
+const text =
+data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+
+if(!text){
+
+throw new Error(
+"هوش مصنوعی پاسخی برنگرداند."
+);
+
+}
+
+
+const result =
+parseJSON(text);
+
+
+showResult(result);
+
+
+}
+catch(error){
+
+console.error(error);
+
+showError(
+"تشخیص انجام نشد: "
++
+error.message
+);
+
+}
+finally{
+
+document.getElementById(
+"loading"
+).style.display = "none";
+
+analyzeButton.disabled = false;
+
+}
+
+});
+
+
+/* =========================================
+   FILE → BASE64
+========================================= */
+
+function fileToBase64(file){
+
+return new Promise(
+(resolve,reject)=>{
+
+const reader =
+new FileReader();
+
+reader.onload =
+()=>{
+
+const result =
+reader.result;
+
+const base64 =
+result.split(",")[1];
+
+resolve(base64);
+
+};
+
+reader.onerror =
+reject;
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+
+/* =========================================
+   JSON PARSER
+========================================= */
+
+function parseJSON(text){
+
+text =
+text.replace(
+/```json/g,
+""
+);
+
+text =
+text.replace(
+/```/g,
+""
+);
+
+const start =
+text.indexOf("{");
+
+const end =
+text.lastIndexOf("}");
+
+if(start === -1 || end === -1){
+
+throw new Error(
+"فرمت پاسخ نامعتبر است."
+);
+
+}
+
+return JSON.parse(
+text.substring(
+start,
+end + 1
+)
+);
+
+}
+
+
+/* =========================================
+   SHOW RESULT
+========================================= */
+
+function showResult(result){
+
+document.getElementById(
+"place"
+).textContent =
+result.place || "نامشخص";
+
+
+document.getElementById(
+"city"
+).textContent =
+result.city || "نامشخص";
+
+
+document.getElementById(
+"country"
+).textContent =
+result.country || "نامشخص";
+
+
+document.getElementById(
+"continent"
+).textContent =
+result.continent || "نامشخص";
+
+
+let confidence =
+Number(result.confidence) || 0;
+
+
+confidence =
+Math.max(
+0,
+Math.min(
+100,
+confidence
+)
+);
+
+
+document.getElementById(
+"confidenceText"
+).textContent =
+confidence + "%";
+
+
+setTimeout(()=>{
+
+document.getElementById(
+"barFill"
+).style.width =
+confidence + "%";
+
+},100);
+
+
+const features =
+Array.isArray(result.features)
+?
+result.features
+:
+[];
+
+
+document.getElementById(
+"features"
+).innerHTML =
+features.length
+?
+features.map(
+x => "• " + escapeHTML(x)
+).join("<br>")
+:
+"نشانه مشخصی گزارش نشده است";
+
+
+document.getElementById(
+"result"
+).style.display =
+"block";
+
+}
+
+
+/* =========================================
+   SECURITY
+========================================= */
+
+function escapeHTML(text){
+
+return String(text)
+.replace(
+/&/g,
+"&amp;"
+)
+.replace(
+/</g,
+"&lt;"
+)
+.replace(
+/>/g,
+"&gt;"
+)
+.replace(
+/"/g,
+"&quot;"
+)
+.replace(
+/'/g,
+"&#039;"
+);
+
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+function showError(message){
+
+const error =
+document.getElementById("error");
+
+error.textContent =
+message;
+
+error.style.display =
+"block";
+
+}
+
+function hideError(){
+
+document.getElementById(
+"error"
+).style.display =
+"none";
+
+}
+
+</script>
+
+</body>
+</html>
